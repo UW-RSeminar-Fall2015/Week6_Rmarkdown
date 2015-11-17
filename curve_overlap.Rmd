@@ -14,14 +14,22 @@ My lab has been working on a project forecasting how the timing of flowering wil
 
 ![Rainier Meadow](./images/Rainier_Meadow.JPG)
 
-First we define the two functions representing the two phenological curves from different species, times, or places. In this case, the curves are quasi-gaussian, with functional forms we can easily fit using logistic regression.
+First we define the two functions representing the two phenological curves from different species, times, or places. In this case, the curves are quasi-gaussian, with functional forms we can easily fit using logistic regression:
+
+$$ logit(y)=a+bx+cx^{2} $$
+
+here the $logit()$ function is the link between our data and a nice simple polynomial fit. Another way to represent this relationship is:
+
+$$ y=\dfrac{e^{a+bx+cx^{2}}}{1+e^{a+bx+cx^{2}}} $$
+
+I want to generate two curves of this form that represent the seasonal progression of life stages of two different organisms. I can make one of the curves asymmetric by log-transforming the x variable:
 
 ```{r}
 f1 <- function(x,a1,b1,c1) { exp(a1 + b1 * x + c1 * x^2)/(1 + exp(a1 + b1 * x + c1 * x^2)) }
 f2 <- function(x,a2,b2,c2) { exp(a2 + b2 * log(x) + c2 * log(x)^2)/(1 + exp(a2 + b2 * log(x) + c2 * log(x)^2)) }
 ```
 
-Next we want to convert the two functions into density functions (meaning that areas under the curves should sum to one). I'm doing this numerically to avoid a nasty integral. This works well unless the areas under the curve are really small.
+Next we want to convert the two functions into density functions (meaning that areas under the curves should sum to one). This is one way to normalize measurements of different organisms so they are comparible. In this example, I'm doing this numerically to avoid a nasty integral. This works well unless the areas under the curve are really small.
 
 ```{r}
 f1_dens <- function(x,a1,b1,c1) { 
