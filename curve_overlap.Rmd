@@ -1,11 +1,13 @@
 ---
 title: "Phenology and the Intersection of Two Curves"
 comments: yes
-date: "2015-11-17"
+date: '2015-11-17'
 output:
   pdf_document:
     fig_caption: yes
   html_document:
+    fig_caption: yes
+  word_document:
     fig_caption: yes
 layout: post
 published: yes
@@ -15,6 +17,8 @@ categories:
 - Phenology
 ---
 
+### Introduction
+
 My lab has been working on a project forecasting how the timing of flowering will vary over space and through time with climate change^[Breckheimer et al. in prep.]. To do this well, we need robust ways to quantify shifts in phenological timing. The approach we have taken so-far is to fit relatively simple functions to the observed data. But how do we quantify the amount of phenological match or mismatch for species that have different phenologies that can potentially be described using different mathematical relationships? 
 
 Here's where numerical integration comes in. This is an example with some simulated data. I've borrowed some of this code from [here](http://stats.stackexchange.com/questions/12209/percentage-of-overlapping-regions-of-two-normal-distributions).
@@ -23,6 +27,7 @@ Here's where numerical integration comes in. This is an example with some simula
 
 ![Subalpine meadows near Paradise on Mt. Rainier](./images/Rainier_Meadow.JPG)
 
+### Defining our Functions
 First we define the two functions representing the two phenological curves from different species, times, or places. In this case, the curves are quasi-gaussian, with functional forms we can easily fit using logistic regression:
 
 $$ logit(y)=a+bx+cx^{2} $$
@@ -42,6 +47,8 @@ f2 <- function(x,a2,b2,c2) { exp(a2 + b2 * log(x) + c2 * log(x)^2)/
 }
 ```
 
+### Convert them to Densities
+
 Next we want to convert the two functions into density functions (meaning that areas under the curves should sum to one). This is one way to normalize measurements of different organisms that are potentially on different scales so they are more comparible. In this example, I'm doing this numerically to avoid a nasty integral. This works well unless the areas under the curve are really small.
 
 ```{r}
@@ -58,6 +65,8 @@ f2_dens <- function(x,a2,b2,c2) {
 }
 ```
 
+### Find the minimum and integrate
+
 Now we can define a function that returns the minimum of the two curves wherever they overlap.
 
 ```{r}
@@ -67,6 +76,8 @@ min_f1f2_dens <- function(x, a1, b1, c1, a2, b2, c2) {
   pmin(f1, f2)
 }
 ```
+
+### Checking our work
 
 Now we can use some made-up parameters for each curve and stick them in a nice table:
 
@@ -109,7 +120,6 @@ lines(xs, y2d, lty="dotted")
 Looks good, so the last step is to compute the area where the two densities intersect.
 
 ```{r}
-##Computes overlap
 over_dens <- integrate(min_f1f2_dens, 0, Inf, a1=a1, b1=b1, c1=c1, a2=a2, b2=b2, c2=c2)
 ```
 
